@@ -1,0 +1,30 @@
+Record ID,Deal Name,Deal Stage,Amount,Close Date,Deal owner,Associated Company,Lead Source,Last Activity Date,Next Step,Deal Description,Create Date
+9016,Tidewater Bank - Transaction Monitoring,Negotiation,,2026-10-24,Maya Chen,Tidewater Bank,Referral,2026-10-01,MSA redlines,,2026-06-06
+9013,Helix Digital Assets - Sanctions Screening,Demo Scheduled,150000,2026-12-12,Tom Becker,Helix Digital Assets,Outbound,2026-09-14,Exec alignment w/ CCO,,2026-05-18
+9015,Evergreen BaaS - Transaction Monitoring,Closed Won,180000,2026-09-24,Derek Okafor,Evergreen BaaS,Inbound - Website,2026-09-13,Back-test results readout,,2026-06-29
+9006,NovaRemit - KYC + Percy,Closed Lost,300000,2026-09-29,Maya Chen,NovaRemit,Inbound - Demo Request,2026-09-17,Exec alignment w/ CCO,,2025-12-18
+9022,Solace Remittance - KYC + Percy,Discovery,140000,2027-01-02,Derek Okafor,Solace Remittance,,2026-09-30,Scoping call,Came out of the ACAMS Hollywood dinner we hosted. Their CCO asked for a back-test on their alert backlog.,2026-09-13
+9018,Ridgeway Money - KYC,Technical Evaluation,95000,2026-11-03,Tom Becker,Ridgeway Money,Inbound - Website,2026-07-13,,,2026-03-28
+9017,Keystone Commerce - EDD Automation,Proposal,180000,2026-08-24,Priya Raman,Keystone Commerce Bank,Outbound,2026-09-25,Follow up on pricing,,2026-04-27
+9024,First Harbor - Full Platform,Negotiation,480000,2026-10-22,Maya Chen,First Harbor Bancorp,Outbound,2026-10-02,Exec sign-off,,2026-03-18
+9008,Stackbridge - EDD Automation,Closed Won,150000,2026-08-20,Maya Chen,Stackbridge,Event - Money20/20,2026-09-11,Security review call,,2026-06-21
+9019,Bayside Savings - Full Platform,Discovery,310000,2026-10-29,Priya Raman,Bayside Savings Bank,Event - ACAMS,2026-10-02,Legal,Their legal sent back MSA redlines Friday. Procurement asked for final pricing and a signature date before quarter end.,2026-05-17
+9004,Tallyhaus - Full Platform,Negotiation,180000,2027-02-19,Lena Ortiz,Tallyhaus,Inbound - Demo Request,2026-09-27,Security review call,,2026-06-22
+9023,Copperline - Transaction Monitoring,Technical Evaluation,260000,2026-11-18,Maya Chen,Copperline Payments,,2026-09-29,Back-test readout,Inbound from website demo form. Switching off legacy TM vendor at renewal in Q1.,2026-07-26
+9027,Northpoint - Sanctions + TM,Technical Evaluation,290000,2026-11-08,Maya Chen,Northpoint Natl Bank,Event - Money20/20,2026-09-27,Security questionnaire,,2026-06-16
+9010,Quanta Neobank - Full Platform,Technical Evaluation,180000,2027-02-12,Lena Ortiz,Quanta Neobank,Outbound,2026-09-20,Pilot kickoff,,2026-04-23
+9003,Arcpoint Wallet - Fraud Investigations,Discovery,240000,2027-01-27,Maya Chen,Arcpoint Wallet,Event - Money20/20,2026-09-25,Pilot kickoff,,2026-02-10
+9029,Evergreen BaaS - Partner bank program,Verbal Yes,390000,2026-10-16,Tom Becker,Evergreen BaaS,Partner,2026-10-03,Order form,,2026-05-07
+9014,Copperline Payments - KYC + Percy,Closed Won,45000,2026-09-04,Priya Raman,Copperline Payments,Event - Money20/20,2026-10-02,Security review call,,2026-06-12
+9028,Quanta - Percy pilot,Proposal,,,Priya Raman,,Inbound - Website,2026-09-20,,Pilot on 3 months of alerts. Marcus Lee (Head of FinCrime) is the champion.,2026-08-20
+9001,Meridian Community Bank - Transaction Monitoring,Closed Won,150000,2026-08-19,Maya Chen,Meridian Community Bank,Event - ACAMS,2026-09-12,Exec alignment w/ CCO,,2026-01-30
+9025,Granite Trust - KYC expansion,Proposal,155000,2026-11-13,Maya Chen,Granite Trust,Referral,2026-09-23,Pricing review,,2026-07-01
+9021,Silverline FCU - Sanctions Screening,Demo,75000,2026-12-03,Tom Becker,Silverline FCU,,2026-09-28,Demo w/ BSA team,Met their BSA Officer at our booth at Money20/20 Vegas. Warm intro to CRO after.,2026-09-04
+9020,Driftwood Card - Fraud Investigations,Proposal,220000,2026-10-19,Priya Raman,Driftwood Card Co,Partner,2026-08-27,Check in,Champion (Head of Fraud) left the company in August. No reply from new VP since. Budget may have moved to an in-house build.,2026-03-08
+9026,Tallyhaus - EDD,demo,65000,2026-11-23,Priya Raman,Tallyhaus Inc,Inbound - Demo Request,2026-09-26,Demo,,2026-09-09
+9009,Fernhill Lending - Transaction Monitoring,Negotiation,120000,2026-12-19,Priya Raman,Fernhill Lending,Outbound,2026-10-03,Back-test results readout,,2026-02-08
+9007,Cadence Credit - Full Platform,Closed Won,60000,2026-09-24,Lena Ortiz,Cadence Credit,Outbound,2026-09-29,Send order form,,2026-01-03
+9002,Cedar Valley Bank & Trust - EDD Automation,Proposal,420000,2027-02-06,Maya Chen,Cedar Valley Bank & Trust,Event - Money20/20,2026-09-20,Send order form,,2026-05-05
+9005,Coinvault Exchange - EDD Automation,Proposal,240000,2027-02-01,Maya Chen,Coinvault Exchange,Inbound - Demo Request,2026-10-03,Send order form,,2026-01-09
+9011,Solace Remittance - Transaction Monitoring,Closed Won,240000,2026-09-13,Lena Ortiz,Solace Remittance,Referral,2026-09-26,Exec alignment w/ CCO,,2026-07-15
+9012,Driftwood Card Co - Sanctions Screening,Closed Won,240000,2026-08-17,Tom Becker,Driftwood Card Co,Partner,2026-09-17,Security review call,,2026-02-21

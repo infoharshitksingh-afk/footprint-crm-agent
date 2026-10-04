@@ -1,0 +1,397 @@
+<title>CRM Cleanup Review</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a case-review desk. Summary ledger on top, then a single queue of proposals ranked by pipeline dollars. */
+:root {
+  --bg: #eef1f4;
+  --panel: #ffffff;
+  --ink: #15212c;
+  --muted: #5b6875;
+  --line: #d6dde4;
+  --accent: #2343c9;
+  --accent-soft: #e4e9fb;
+  --ok: #1f7a4d;
+  --ok-soft: #e1f2e9;
+  --warn: #a35a00;
+  --warn-soft: #fbeedb;
+  --bad: #b3261e;
+  --bad-soft: #f8e3e1;
+  --claude: #8a4b14;
+  --claude-soft: #f6ebe0;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --panel: #172029; --ink: #e4e9ee; --muted: #93a1ae; --line: #2a3642;
+    --accent: #8ea2ff; --accent-soft: #222c4d; --ok: #5fc792; --ok-soft: #173327;
+    --warn: #f0a94a; --warn-soft: #3a2a12; --bad: #ff8a80; --bad-soft: #3d1d1b;
+    --claude: #e8a76a; --claude-soft: #3a2817; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --panel: #172029; --ink: #e4e9ee; --muted: #93a1ae; --line: #2a3642;
+  --accent: #8ea2ff; --accent-soft: #222c4d; --ok: #5fc792; --ok-soft: #173327;
+  --warn: #f0a94a; --warn-soft: #3a2a12; --bad: #ff8a80; --bad-soft: #3d1d1b;
+  --claude: #e8a76a; --claude-soft: #3a2817; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; display: grid; gap: 24px; }
+h1, h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: 0.01em; text-wrap: balance; margin: 0; }
+h1 { font-size: 1.9rem; line-height: 1.15; }
+h2 { font-size: 1.15rem; }
+.eyebrow { font: 500 11px/1 var(--font-data); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px 24px; }
+header .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); }
+.mode { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 3px; background: var(--claude-soft); color: var(--claude); font: 500 12px var(--font-data); }
+.mode.rules { background: var(--accent-soft); color: var(--accent); }
+
+/* ledger */
+.ledger { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; display: grid; gap: 18px; }
+.trust { display: grid; gap: 10px; }
+.trust-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.trust-big { font: 600 2.4rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.bar { height: 14px; border-radius: 2px; background: var(--bad-soft); overflow: hidden; display: flex; }
+.bar span { display: block; height: 100%; background: var(--ok); }
+.bar-legend { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--muted); }
+.swatch { display: inline-block; width: 9px; height: 9px; border-radius: 1px; margin-right: 6px; vertical-align: 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+@media (max-width: 520px) { .stats { grid-template-columns: 1fr 1fr; } .stat:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+.stat { background: var(--panel); padding: 12px 14px; display: grid; gap: 4px; }
+.stat b { font: 600 1.35rem/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.stat small { color: var(--muted); font-size: 12px; }
+
+.cols { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; }
+@media (max-width: 820px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.issues { display: grid; gap: 6px; }
+.issue-row { display: grid; grid-template-columns: minmax(0, 1fr) 46px 74px; gap: 10px; align-items: center; font-size: 13px; }
+.issue-row .track { grid-column: 1 / -1; height: 4px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-top: -2px; }
+.issue-row .track span { display: block; height: 100%; }
+.cat-forecast { background: var(--bad); } .cat-attribution { background: var(--warn); }
+.cat-hygiene { background: var(--accent); } .cat-enrichment { background: var(--muted); }
+.notes { display: grid; gap: 8px; font-size: 13px; max-height: 260px; overflow: auto; padding-right: 4px; }
+.notes p { margin: 0; padding: 8px 10px; background: var(--bg); border-radius: 4px; }
+
+/* queue */
+.queue-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font: 500 12px var(--font-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+select, input[type="search"] { font: 13px var(--font-body); padding: 5px 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); color: var(--ink); }
+input[type="search"] { min-width: 0; width: 180px; }
+.bulk { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.btn { font: 500 13px var(--font-body); padding: 6px 12px; border-radius: 3px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #0f151b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0f151b; } }
+
+.list { display: grid; gap: 8px; }
+.item { background: var(--panel); border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; padding: 12px 14px; display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 6px 16px; align-items: start; }
+.item.forecast { border-left-color: var(--bad); } .item.attribution { border-left-color: var(--warn); }
+.item.hygiene { border-left-color: var(--accent); } .item.enrichment { border-left-color: var(--line); }
+.item.approved { background: var(--ok-soft); } .item.rejected { opacity: 0.55; }
+.money { font: 600 1.05rem/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+.money small { display: block; font: 400 11px var(--font-data); color: var(--muted); }
+.body { min-width: 0; display: grid; gap: 4px; }
+.line1 { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.issue-name { font-weight: 600; }
+.record { color: var(--muted); overflow-wrap: anywhere; }
+.change { font: 13px var(--font-data); overflow-wrap: anywhere; }
+.change del { color: var(--bad); text-decoration-thickness: 1px; }
+.change ins { color: var(--ok); text-decoration: none; font-weight: 500; }
+.reason { font-size: 13px; color: var(--muted); max-width: 72ch; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font: 500 11px var(--font-data); padding: 2px 6px; border-radius: 2px; background: var(--bg); color: var(--muted); }
+.tag.claude { background: var(--claude-soft); color: var(--claude); }
+.tag.fix { background: var(--accent-soft); color: var(--accent); }
+.tag.flag { background: var(--warn-soft); color: var(--warn); }
+.actions { display: flex; gap: 6px; }
+.actions button { font: 500 12px var(--font-body); padding: 6px 10px; border-radius: 3px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; white-space: nowrap; }
+.actions .approve[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--panel); }
+.actions .reject[aria-pressed="true"] { background: var(--bad); border-color: var(--bad); color: var(--panel); }
+@media (max-width: 640px) {
+  .item { grid-template-columns: minmax(0, 1fr); }
+  .actions { justify-content: flex-start; }
+}
+.empty { padding: 24px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: 4px; }
+.more { justify-self: center; }
+
+.export { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 12px; }
+.export-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.progress { font: 500 13px var(--font-data); }
+pre { margin: 0; background: var(--bg); padding: 10px 12px; border-radius: 4px; font: 12px/1.5 var(--font-data); overflow-x: auto; }
+textarea { width: 100%; min-height: 90px; font: 12px var(--font-data); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 8px; }
+.toast { font-size: 12px; color: var(--ok); }
+@media (prefers-reduced-motion: no-preference) { .item { transition: background-color .15s, opacity .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div style="display:grid;gap:6px">
+      <span class="eyebrow" id="eyebrow">CRM cleanup agent</span>
+      <h1>Review proposed fixes before anything changes</h1>
+    </div>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section class="ledger" aria-labelledby="trust-title">
+    <div class="trust">
+      <span class="eyebrow" id="trust-title">Open pipeline you can trust today</span>
+      <div class="trust-head"><span class="trust-big" id="trust-big"></span><span id="trust-sub" class="muted"></span></div>
+      <div class="bar" role="img" id="trust-bar"><span id="trust-fill"></span></div>
+      <div class="bar-legend">
+        <span><i class="swatch" style="background:var(--ok)"></i>Clean: no forecast issues</span>
+        <span><i class="swatch" style="background:var(--bad-soft);outline:1px solid var(--bad)"></i>Touched by a duplicate, missing amount, stale or mis-staged record</span>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div class="cols">
+    <section style="display:grid;gap:12px;align-content:start">
+      <h2>What's broken</h2>
+      <p class="muted" style="margin:0;font-size:13px">Grouped by how much it hurts the forecast. Dollar figure is the open pipeline each issue touches, counting every deal once.</p>
+      <div class="issues" id="issues"></div>
+      <div class="bar-legend"><span><i class="swatch cat-forecast"></i>Forecast</span><span><i class="swatch cat-attribution"></i>Attribution</span><span><i class="swatch cat-hygiene"></i>Hygiene</span><span><i class="swatch cat-enrichment"></i>Enrichment</span></div>
+    </section>
+    <section style="display:grid;gap:12px;align-content:start">
+      <h2>Checked and left alone</h2>
+      <p class="muted" style="margin:0;font-size:13px">Look-alike records Claude judged to be different companies. Nothing is proposed for these.</p>
+      <div class="notes" id="notes"></div>
+    </section>
+  </div>
+
+  <section style="display:grid;gap:12px" aria-labelledby="queue-title">
+    <div class="queue-head">
+      <h2 id="queue-title">Review queue</h2>
+      <div class="bulk">
+        <button class="btn" id="bulk-safe" type="button">Approve rule fixes at 95%+ confidence</button>
+        <button class="btn" id="bulk-reset" type="button">Clear decisions</button>
+      </div>
+    </div>
+    <div class="filters" role="group" aria-label="Filters">
+      <span class="chip-group" id="cat-chips" style="display:flex;flex-wrap:wrap;gap:6px"></span>
+      <select id="f-source" aria-label="Proposed by">
+        <option value="">Proposed by: anyone</option>
+        <option value="rule">Rules</option>
+        <option value="claude">Claude</option>
+      </select>
+      <select id="f-action" aria-label="Type">
+        <option value="">Fixes and flags</option>
+        <option value="fix">Fixes only</option>
+        <option value="flag">Flags only</option>
+      </select>
+      <select id="f-status" aria-label="Status">
+        <option value="">Any status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <input type="search" id="f-q" placeholder="Search records" aria-label="Search records">
+    </div>
+    <div class="list" id="list"></div>
+    <button class="btn more" id="more" type="button" hidden>Show more</button>
+  </section>
+
+  <section class="export" aria-labelledby="export-title">
+    <h2 id="export-title">Apply what you approved</h2>
+    <div class="export-row">
+      <span class="progress" id="progress"></span>
+      <button class="btn primary" id="download" type="button">Download decisions.json</button>
+      <button class="btn" id="copy" type="button">Copy decisions</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+    <textarea id="copybox" hidden readonly aria-label="Decisions JSON"></textarea>
+    <p class="muted" style="margin:0;font-size:13px">Save the file into the output folder, then run:</p>
+    <pre>python run.py apply</pre>
+    <p class="muted" style="margin:0;font-size:13px">Approved fixes land in cleaned, re-import-ready copies of your export with a full change log. Approved flags become a task list per record owner. Your original files are never touched.</p>
+  </section>
+</div>
+
+<script>
+const RUN = /*__DATA__*/null;
+const CATS = [["forecast","Forecast"],["attribution","Attribution"],["hygiene","Hygiene"],["enrichment","Enrichment"]];
+const PAGE = 40;
+let shown = PAGE;
+const state = { cat: new Set(["forecast","attribution","hygiene","enrichment"]), source: "", action: "", status: "", q: "" };
+const key = "crm-review-" + (RUN && RUN.run_id);
+let decisions = {};
+try { decisions = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { decisions = {}; }
+function save() { try { localStorage.setItem(key, JSON.stringify(decisions)); } catch (e) {} }
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+function money(n) {
+  n = Number(n) || 0;
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M";
+  if (n >= 1e3) return "$" + Math.round(n / 1e3) + "K";
+  return "$" + Math.round(n);
+}
+
+function renderSummary() {
+  const h = RUN.health, c = h.counts;
+  $("eyebrow").textContent = RUN.company ? RUN.company + " · CRM cleanup agent" : "CRM cleanup agent";
+  $("meta").innerHTML = [
+    `<span>As of <b class="mono">${esc(RUN.as_of)}</b></span>`,
+    `<span>${esc(RUN.files.join(", "))}</span>`,
+    RUN.llm ? `<span class="mode">Claude · ${esc(RUN.model)}</span>` : `<span class="mode rules">Rules only, no API key</span>`
+  ].join("");
+  $("trust-big").textContent = h.trust_pct + "%";
+  $("trust-sub").textContent = `${money(h.pipeline_trusted)} of ${money(h.open_pipeline_incl_estimates)} across ${h.open_deals} open deals`;
+  $("trust-fill").style.width = h.trust_pct + "%";
+  $("trust-bar").setAttribute("aria-label", `${h.trust_pct}% of open pipeline is clean`);
+  const stats = [
+    [money(h.pipeline_untrusted), `pipeline on ${h.deals_untrusted} deals with forecast issues`],
+    [c.proposals, `proposals: ${c.fixes} fixes, ${c.flags} flags for owners`],
+    [`${c.by_rule} / ${c.by_claude}`, "proposed by rules / by Claude"],
+    [h.deals_missing_amount, `open deals with no amount (valued at the ${money(h.median_open_deal)} median)`],
+    [`${c.accounts} · ${c.contacts} · ${c.deals}`, "accounts · contacts · deals scanned"],
+  ];
+  $("stats").innerHTML = stats.map(([b, s]) => `<div class="stat"><b>${esc(b)}</b><small>${esc(s)}</small></div>`).join("");
+
+  // issues by pipeline touched
+  // unique open pipeline each issue touches (a deal counts once per issue, however many records point at it)
+  const agg = {}, vals = h.deal_values || {};
+  RUN.proposals.forEach(p => {
+    const a = agg[p.issue_label] || (agg[p.issue_label] = { n: 0, deals: new Set(), cat: p.category });
+    a.n++; (p.touched_deals || []).forEach(d => a.deals.add(d));
+  });
+  Object.values(agg).forEach(a => { a.usd = [...a.deals].reduce((s, d) => s + (vals[d] || 0), 0); });
+  const order = { forecast: 0, attribution: 1, hygiene: 2, enrichment: 3 };
+  const rows = Object.entries(agg).sort((a, b) => order[a[1].cat] - order[b[1].cat] || b[1].usd - a[1].usd || b[1].n - a[1].n);
+  const max = Math.max(1, ...rows.map(r => r[1].usd));
+  $("issues").innerHTML = rows.map(([label, a]) => `
+    <div class="issue-row">
+      <span>${esc(label)}</span><span class="mono muted" style="text-align:right">${a.n}</span>
+      <span class="mono" style="text-align:right">${money(a.usd)}</span>
+      <div class="track"><span class="cat-${a.cat}" style="width:${Math.max(2, 100 * a.usd / max)}%"></span></div>
+    </div>`).join("");
+
+  $("notes").innerHTML = RUN.notes.length
+    ? RUN.notes.map(n => `<p>${esc(n)}</p>`).join("")
+    : `<p class="muted">${RUN.llm ? "No look-alikes were rejected on this run." : "Run with an API key to have Claude check look-alike accounts."}</p>`;
+}
+
+function renderChips() {
+  $("cat-chips").innerHTML = CATS.map(([k, l]) => {
+    const n = RUN.proposals.filter(p => p.category === k).length;
+    return `<button class="chip" type="button" data-cat="${k}" aria-pressed="${state.cat.has(k)}">${l} <span class="mono">${n}</span></button>`;
+  }).join("");
+}
+
+function matches(p) {
+  if (!state.cat.has(p.category)) return false;
+  if (state.source && p.source !== state.source) return false;
+  if (state.action === "fix" && p.action === "flag") return false;
+  if (state.action === "flag" && p.action !== "flag") return false;
+  const st = decisions[p.id] || "pending";
+  if (state.status && st !== state.status) return false;
+  if (state.q) {
+    const hay = (p.record_label + " " + p.issue_label + " " + p.new + " " + p.old + " " + (p.merge_names || []).join(" ")).toLowerCase();
+    if (!hay.includes(state.q)) return false;
+  }
+  return true;
+}
+
+function changeHtml(p) {
+  if (p.action === "merge") {
+    const names = (p.merge_names || p.merge_ids).map(esc).join(", ");
+    return `<div class="change">merge <del>${names}</del> into <ins>${esc(p.record_label)}</ins></div>`;
+  }
+  if (p.action === "flag") return `<div class="change muted">${esc(p.field || "")}${p.old ? ` = ${esc(p.old)}` : ""} · needs the owner</div>`;
+  return `<div class="change">${esc(p.field)}: ${p.old ? `<del>${esc(p.old)}</del> → ` : ""}<ins>${esc(p.new)}</ins></div>`;
+}
+
+function renderList() {
+  const items = RUN.proposals.filter(matches);
+  const slice = items.slice(0, shown);
+  $("list").innerHTML = slice.length ? slice.map(p => {
+    const st = decisions[p.id] || "pending";
+    const verb = p.action === "flag" ? "Send to owner" : "Approve";
+    return `<article class="item ${p.category} ${st}" data-id="${p.id}">
+      <div class="money">${p.pipeline ? money(p.pipeline) : "—"}<small>${p.pipeline_estimated ? "est. open" : "open pipeline"}</small></div>
+      <div class="body">
+        <div class="line1"><span class="issue-name">${esc(p.issue_label)}</span><span class="record">${esc(p.record_label)}</span></div>
+        ${changeHtml(p)}
+        <div class="reason">${esc(p.reason)}</div>
+        <div class="tags">
+          <span class="tag ${p.action === "flag" ? "flag" : "fix"}">${p.action}</span>
+          <span class="tag ${p.source === "claude" ? "claude" : ""}">${p.source} · ${Math.round(p.confidence * 100)}%</span>
+          <span class="tag">${esc(p.object.slice(0, -1))} ${esc(p.record_id)}</span>
+          ${p.owner ? `<span class="tag">${esc(p.owner)}</span>` : ""}
+          <span class="tag">${p.id}</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="approve" type="button" aria-pressed="${st === "approved"}" data-act="approved">${verb}</button>
+        <button class="reject" type="button" aria-pressed="${st === "rejected"}" data-act="rejected">Reject</button>
+      </div>
+    </article>`;
+  }).join("") : `<div class="empty">No proposals match these filters.</div>`;
+  $("more").hidden = items.length <= shown;
+  $("more").textContent = `Show more (${items.length - shown} left)`;
+  renderProgress();
+}
+
+function renderProgress() {
+  const vals = Object.values(decisions);
+  const a = vals.filter(v => v === "approved").length, r = vals.filter(v => v === "rejected").length;
+  $("progress").textContent = `${a} approved · ${r} rejected · ${RUN.proposals.length - a - r} pending`;
+}
+
+function payload() {
+  return JSON.stringify({ run_id: RUN.run_id, decided_at: new Date().toISOString(), decisions }, null, 1);
+}
+
+document.addEventListener("click", (e) => {
+  const chip = e.target.closest(".chip");
+  if (chip) {
+    const k = chip.dataset.cat;
+    state.cat.has(k) ? state.cat.delete(k) : state.cat.add(k);
+    shown = PAGE; renderChips(); renderList(); return;
+  }
+  const btn = e.target.closest(".actions button");
+  if (btn) {
+    const id = btn.closest(".item").dataset.id, act = btn.dataset.act;
+    if (decisions[id] === act) delete decisions[id]; else decisions[id] = act;
+    save(); renderList();
+  }
+});
+$("f-source").onchange = e => { state.source = e.target.value; shown = PAGE; renderList(); };
+$("f-action").onchange = e => { state.action = e.target.value; shown = PAGE; renderList(); };
+$("f-status").onchange = e => { state.status = e.target.value; shown = PAGE; renderList(); };
+$("f-q").oninput = e => { state.q = e.target.value.trim().toLowerCase(); shown = PAGE; renderList(); };
+$("more").onclick = () => { shown += PAGE; renderList(); };
+$("bulk-safe").onclick = () => {
+  let n = 0;
+  RUN.proposals.forEach(p => {
+    if (p.source === "rule" && p.action !== "flag" && p.confidence >= 0.95 && !decisions[p.id]) { decisions[p.id] = "approved"; n++; }
+  });
+  save(); renderList(); flash(`Approved ${n} rule fixes`);
+};
+$("bulk-reset").onclick = () => { decisions = {}; save(); renderList(); flash("Decisions cleared"); };
+$("download").onclick = () => {
+  const blob = new Blob([payload()], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "decisions.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  flash("If nothing downloaded, use Copy decisions and save it as decisions.json");
+};
+$("copy").onclick = async () => {
+  const text = payload();
+  try { await navigator.clipboard.writeText(text); flash("Copied. Save it as output/decisions.json"); }
+  catch (err) { const box = $("copybox"); box.hidden = false; box.value = text; box.select(); flash("Select all and copy the text below"); }
+};
+let t;
+function flash(msg) { $("toast").textContent = msg; clearTimeout(t); t = setTimeout(() => $("toast").textContent = "", 4000); }
+
+renderSummary(); renderChips(); renderList();
+</script>
